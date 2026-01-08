@@ -1,4 +1,5 @@
 import { CardRecommender } from "@/components/CardRecommender";
+import { HomeScreenLink } from "@/components/HomeScreenLink";
 import { supabaseServer } from "@/lib/supabaseServer";
 import type { CashbackCategory, CreditCard } from "@/lib/types";
 
@@ -39,8 +40,11 @@ export default async function Home() {
           loadError={loadError}
         />
 
-        <footer className="mt-8 text-center text-xs text-zinc-500 dark:text-zinc-500">
-          Data is loaded from Supabase (public read-only).
+        <footer className="mt-8 space-y-3 text-center text-xs text-zinc-500 dark:text-zinc-500">
+          <div>
+            <HomeScreenLink />
+          </div>
+          <div>Data is loaded from Supabase (public read-only).</div>
         </footer>
       </main>
     </div>
