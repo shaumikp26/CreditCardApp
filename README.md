@@ -19,6 +19,8 @@ npm install
 - Fill in:
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY` (server-only; needed for admin Add page)
+  - `ADMIN_PASSCODE` (server-only; protects admin writes)
 
 3) Run dev server
 
@@ -36,6 +38,7 @@ Tables:
 - `card_name` (text)
 - `issuer` (text)
 - `notes` (text)
+- `expiry_date` (date)
 
 2) `cashback_categories`
 - `id` (uuid)
@@ -64,12 +67,29 @@ using (true);
 
 Do **not** create INSERT/UPDATE/DELETE policies for `anon` (keeps the DB effectively read-only for public users).
 
+## DB migration (expiry_date)
+Run this once in Supabase SQL editor:
+
+```sql
+alter table public.credit_cards
+add column if not exists expiry_date date;
+```
+
+## Admin Add page (no user auth)
+This app includes an admin-only page at `/add`.
+- It posts to `/api/admin/add-card` and is protected by `ADMIN_PASSCODE`.
+- The API uses `SUPABASE_SERVICE_ROLE_KEY` server-side to insert into:
+  - `credit_cards`
+  - `cashback_categories`
+
 ## Deploy to Vercel
 1) Push this repo to GitHub.
 2) In Vercel: **Add New → Project** → import the repo.
 3) Set environment variables (Project Settings → Environment Variables):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSCODE`
 4) Deploy.
 ## iOS home screen
 - Open the deployed site in Safari → Share → **Add to Home Screen**.

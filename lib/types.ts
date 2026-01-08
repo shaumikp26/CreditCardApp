@@ -3,6 +3,7 @@ export type CreditCard = {
   card_name: string;
   issuer: string;
   notes: string | null;
+  expiry_date?: string | null;
 };
 
 export type CashbackCategory = {
