@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Card Cashback (Next.js + Supabase)
 
-## Getting Started
+Mobile-first web app that recommends the best credit card for a selected transaction category, using a **public read-only** Supabase database.
 
-First, run the development server:
+## Tech
+- Next.js (App Router) + Tailwind CSS
+- Supabase (`@supabase/supabase-js`)
+- No authentication
+
+## Local setup
+1) Install deps
+
+```bash
+npm install
+```
+
+2) Set env vars
+- Copy `.env.example` → `.env.local`
+- Fill in:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+3) Run dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Supabase schema
+Tables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1) `credit_cards`
+- `id` (uuid)
+- `card_name` (text)
+- `issuer` (text)
+- `notes` (text)
 
-## Learn More
+2) `cashback_categories`
+- `id` (uuid)
+- `card_id` (uuid) → references `credit_cards.id`
+- `category` (text)
+- `cashback_rate` (number)
+- `cap` (text, optional)
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase public read-only (RLS) policies
+Enable RLS on both tables and allow SELECT for the `anon` role:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sql
+alter table credit_cards enable row level security;
+alter table cashback_categories enable row level security;
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+create policy "public_read_credit_cards"
+on credit_cards for select
+to anon
+using (true);
 
-## Deploy on Vercel
+create policy "public_read_cashback_categories"
+on cashback_categories for select
+to anon
+using (true);
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Do **not** create INSERT/UPDATE/DELETE policies for `anon` (keeps the DB effectively read-only for public users).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy to Vercel
+1) Push this repo to GitHub.
+2) In Vercel: **Add New → Project** → import the repo.
+3) Set environment variables (Project Settings → Environment Variables):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4) Deploy.
+## iOS home screen
+- Open the deployed site in Safari → Share → **Add to Home Screen**.
+- The app includes a web manifest + Apple web app metadata for a nicer standalone feel.
